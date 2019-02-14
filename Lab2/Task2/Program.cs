@@ -11,14 +11,14 @@ namespace Task2
     {
         static void Main(string[] args)
         {
-            string s = System.IO.File.ReadAllText(@"D:\проекты\PP2\Lab2\Task2\input.txt");
-            StreamWriter sw = new StreamWriter(@"D:\проекты\PP2\Lab2\Task2\output.txt");
-            string[] ss = s.Split();
-            int n = ss.Length;
-            int[] ag = new int[n];
-            for(int i=0;i<n;i++)
+            string s = System.IO.File.ReadAllText(@"D:\проекты\PP2\Lab2\Task2\input.txt");//reading the value of string from the txt file on folder(by link)
+            StreamWriter sw = new StreamWriter(@"D:\проекты\PP2\Lab2\Task2\output.txt");// creating the stream to the output txt for editing
+            string[] ss = s.Split();// creating string array "ss" that has value of splited(without spaces) "s"
+            int n = ss.Length;// creating new array with length "ss"
+            int[] ag = new int[n];// creating int array
+            for (int i = 0; i < n; i++)// loop for writing input to int array
             {
-                ag[i] = int.Parse(ss[i]);
+                ag[i] = int.Parse(ss[i]);// copying input from ss to ag 
             }
             for (int i = 0; i < n; i++) //loop for checking all elements of massive 
             {
@@ -39,7 +39,7 @@ namespace Task2
                     }
                 }
             }
-            sw.Close();
+            sw.Close();// Closing the stream
         }
     }
 }
