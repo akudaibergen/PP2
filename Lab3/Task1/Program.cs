@@ -5,21 +5,25 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace ConsoleApp1
+namespace Task1
 {
     class FarManager
     {
-        public int cursor;
+        public int highlight = 0;
         public string path;
         public int size;
         public bool ok;
         DirectoryInfo directory = null;
-        FileSystemInfo currentFs = null;
+        FileSystemInfo currentfs = null;
 
+        public FarManager()
+        {
+            highlight = 0;
+        }
         public FarManager(string path)
         {
             this.path = path;
-            cursor = 0;
+            highlight = 0;
             directory = new DirectoryInfo(path);
             size = directory.GetFileSystemInfos().Length;
             ok = true;
@@ -27,11 +31,11 @@ namespace ConsoleApp1
 
         public void Color(FileSystemInfo fs, int index)
         {
-            if (cursor == index)
+            if (highlight == index)
             {
-                Console.BackgroundColor = ConsoleColor.White;
-                Console.ForegroundColor = ConsoleColor.Black;
-                currentFs = fs;
+                Console.BackgroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.Gray;
+                currentfs = fs;
             }
             else if (fs.GetType() == typeof(DirectoryInfo))
             {
@@ -41,16 +45,27 @@ namespace ConsoleApp1
             else
             {
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
             }
         }
-
         public void Show()
         {
             Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Magenta;
             directory = new DirectoryInfo(path);
             FileSystemInfo[] fs = directory.GetFileSystemInfos();
+            DirectoryInfo[] di = directory.GetDirectories();
+            FileInfo[] fi = directory.GetFiles();
+            for (int i = 0; i < di.Length; i++)
+            {
+                fs[i] = di[i];
+            }
+            for (int i = 0; i < fi.Length; i++)
+            {
+                fs[i + di.Length] = fi[i];
+            }
             for (int i = 0, k = 0; i < fs.Length; i++)
             {
                 if (ok == false && fs[i].Name[0] == '.')
@@ -58,97 +73,118 @@ namespace ConsoleApp1
                     continue;
                 }
                 Color(fs[i], k);
+                Console.Write(i + 1 + ". ");
                 Console.WriteLine(fs[i].Name);
                 k++;
+
             }
         }
         public void Up()
         {
-            cursor--;
-            if (cursor < 0)
-                cursor = size - 1;
+            highlight--;
+            if (highlight < 0)
+                highlight = size - 1;
         }
         public void Down()
         {
-            cursor++;
-            if (cursor == size)
-                cursor = 0;
+            highlight++;
+            if (highlight == size)
+                highlight = 0;
         }
 
-
-        public void Calc()
-        {
-            directory = new DirectoryInfo(path);
-            FileSystemInfo[] fs = directory.GetFileSystemInfos();
-            size = fs.Length;
-            if (ok == false)
-                for (int i = 0; i < fs.Length; i++)
-                    if (fs[i].Name[0] == '.')
-                        size--;
-        }
         public void Start()
         {
-            ConsoleKeyInfo ck = Console.ReadKey();
-            while (ck.Key != ConsoleKey.Escape)
+            ConsoleKeyInfo consoleKey = Console.ReadKey();
+            while (consoleKey.Key != ConsoleKey.Escape)
             {
-                Calc();
                 Show();
-                ck = Console.ReadKey();
-                if (ck.Key == ConsoleKey.UpArrow)
+                consoleKey = Console.ReadKey();
+                if (consoleKey.Key == ConsoleKey.UpArrow)
                     Up();
-                if (ck.Key == ConsoleKey.DownArrow)
+                if (consoleKey.Key == ConsoleKey.DownArrow)
                     Down();
-                if (ck.Key == ConsoleKey.RightArrow)
+                if (consoleKey.Key == ConsoleKey.RightArrow)
                 {
                     ok = false;
-                    cursor = 0;
+                    highlight = 0;
                 }
-                if (ck.Key == ConsoleKey.LeftArrow)
+                if (consoleKey.Key == ConsoleKey.LeftArrow)
                 {
+                    highlight = 0;
                     ok = true;
-                    cursor = 0;
                 }
-                if (ck.Key == ConsoleKey.Enter)
+                if (consoleKey.Key == ConsoleKey.Enter)
                 {
-                    if (currentFs.GetType() == typeof(DirectoryInfo))
+                    if (currentfs.GetType() == typeof(DirectoryInfo))
                     {
-                        cursor = 0;
-                        path = currentFs.FullName;
+                        highlight = 0;
+                        path = currentfs.FullName;
+                    }
+                    else
+                    {
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.Clear();
+                        string path1 = currentfs.FullName;
+                        string s1 = File.ReadAllText(path1);
+                        Console.Write(s1);
+                        Console.ReadKey();
                     }
                 }
-                if (ck.Key == ConsoleKey.Backspace)
+                if (consoleKey.Key == ConsoleKey.Backspace)
                 {
-                    cursor = 0;
+                    highlight = 0;
                     path = directory.Parent.FullName;
                 }
-                if (ck.Key == ConsoleKey.Delete)
+                if (consoleKey.Key == ConsoleKey.Delete)
                 {
-                    string path1 = currentFs.FullName;
-                    if (currentFs.GetType() == typeof(DirectoryInfo))
+                    if (currentfs.GetType() == typeof(DirectoryInfo))
                     {
+                        string path1 = currentfs.FullName;
                         Directory.Delete(path1, true);
+
                     }
                     else
                     {
-                        File.Delete(path1);
+                        string pathFile = currentfs.FullName;
+                        File.Delete(pathFile);
                     }
                 }
-                if (ck.Key == ConsoleKey.R)
+                if (consoleKey.Key == ConsoleKey.R)
                 {
+                    string path1 = directory.FullName;
                     Console.BackgroundColor = ConsoleColor.Black;
                     Console.Clear();
-                    Console.WriteLine("Enter new name ");
+                    Console.WriteLine("Please write new name, to rename {0}", currentfs.FullName);
                     string name = Console.ReadLine();
 
-                    string path1 = currentFs.FullName;
-                    string path2 = directory.Parent.FullName;
-                    if (currentFs.GetType() == typeof(DirectoryInfo))
+                    if (currentfs.GetType() == typeof(FileInfo))
                     {
 
+                        string sourcefile = currentfs.FullName;
+                        int ind = 0;
+                        string formFile = null;
+                        for (int i = 0; i < sourcefile.Length; i++)
+                        {
+                            if (sourcefile[i] == '.')
+                            {
+                                ind = i;
+                                break;
+                            }
+                        }
+                        for (int i = ind; i < sourcefile.Length; i++)
+                        {
+                            formFile += sourcefile[i];
+                        }
+                        string destfile = Path.Combine(path1, name + formFile);
+                        File.Move(sourcefile, destfile);
                     }
                     else
+                    if (currentfs.GetType() == typeof(DirectoryInfo))
                     {
-                        File.Move();
+                        string sourcedir = currentfs.FullName;
+                        string destdir = Path.Combine(path1, name);
+                        Directory.Move(sourcedir, destdir);
                     }
                 }
             }
@@ -158,9 +194,9 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-            string path = @"D:\проекты\PP2";
-            FarManager fm = new FarManager(path);
-            fm.Start();
+            string path = @"D:\проекты\PP2\experiment";
+            FarManager farmanager = new FarManager(path);
+            farmanager.Start();
         }
     }
 }
